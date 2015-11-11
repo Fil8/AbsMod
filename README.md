@@ -8,6 +8,12 @@ f(v)=2F_{tot}/ (PI DV) * 1/rho(u)
 rho^2(u)= 1-u^2 for |u|<1 
 rho^2(u)= 0     else
 
+DV = range between maximum and minimum gas velocities
+
+u = v-v_0/(DV/2)
+
+!!!! when the binning is equal to 1, otherwise the normalization factor changes.
+
 How to: 
 run the program:
  - python model_1d.py
