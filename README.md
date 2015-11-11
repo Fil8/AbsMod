@@ -1,4 +1,4 @@
-# modello
+# model_1d.ipnyb
 This is the 1dimensional model for a disk with I=90 and PA=0
 we generate the analytical emission line of Stewart 2014:
 
