@@ -1,0 +1,50 @@
+rmax[pc] =  500.
+
+rmin[pc] =  200.
+
+h0[pc] = 200.
+
+i[degrees] =+90.
+
+pa[degrees] = 0.0
+
+rmax_in[pc] =  0.
+
+rmin_in[pc] =  0.
+
+h0_in[pc] = 0.
+
+i_in[degrees] =  +0.0
+
+pa_in[degrees] =  0.
+
+vrot[km/s] =  100.
+
+sign[-] =  -1.
+
+disp[km/s] =  8. 
+
+flux[-] = 1.
+
+pa_cont[degrees] =  +0.
+
+flux_cont_lim[Jy] =  0.130
+
+ra[hms] =  +14:49:21.57
+
+dec[dms] =  +63:16:13.78
+
+z[-] = 0.041639
+
+d_l[Mpc] = 184.127
+
+v_sys[kms] = 12480
+
+vel_res[km/s] =  1.
+
+pix_res[pc] =  20.
+
+pix_res_fin[pc] =  2.
+
+order[-] = 1
+
