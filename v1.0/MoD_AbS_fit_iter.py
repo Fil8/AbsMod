@@ -21,7 +21,6 @@ import time
 import numpy as np
 import string,sys,os
 import argparse
-#import pyfits
 import itertools
 from astropy import wcs
 from astropy.io import fits
@@ -703,8 +702,6 @@ def plot_figure(self,spec_obs,spec_int,res,mod,obs,outfile_fig,flusso,continuum_
            'legend.linewidth': 3,
            'xtick.labelsize':22,
            'ytick.labelsize':22,
-           'xlabel.fontsize':22,
-           'ylabel.fontsize':22,
            'text.usetex': True,
            'text.latex.unicode' : True }
     rc('font',**{'family':'serif','serif':['serif']})
@@ -1302,7 +1299,7 @@ print '********************\n'
 ###################################################
 
 
-# In[364]:
+# In[366]:
 
 #-------------------------------------------------#
 #PLOT for STATISTICAL ANALYSIS                    #
@@ -1323,8 +1320,6 @@ def plot_anal(self,grid_f,grid_x,grid_y,grid_z,s):
            'legend.linewidth': 3,
            'xtick.labelsize':22,
            'ytick.labelsize':22,
-           'xlabel.fontsize':22,
-           'ylabel.fontsize':22,
            'text.usetex': True,
            'text.latex.unicode' : True }
     rc('font',**{'family':'serif','serif':['serif']})
@@ -1491,7 +1486,7 @@ def plot_anal(self,grid_f,grid_x,grid_y,grid_z,s):
     return 0
 
 
-# In[365]:
+# In[367]:
 
 #-------------------------------------------------#
 # READ table and plot validation plots            #
