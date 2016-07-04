@@ -6,7 +6,7 @@ h0[pc] = 200.
 
 i[degrees] =+55.
 
-pa[degrees] = -2.0
+pa[degrees] = -20.0
 
 rmax_in[pc] =  0.
 
@@ -24,7 +24,7 @@ sign[-] =  -1.
 
 disp[km/s] =  8. 
 
-pa_cont[degrees] =  +0.
+pa_cont[degrees] =  +50.
 
 flux_cont_lim[Jy] =  0.130
 
@@ -46,4 +46,4 @@ pix_res_fin[pc] =  20.
 
 order[-] = 1
 
-step[-] = 5
+step[-] = 10
