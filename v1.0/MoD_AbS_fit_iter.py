@@ -3,7 +3,7 @@
 
 # # MoD AbS
 
-# In[10]:
+# In[315]:
 
 ##################################################
 # #                 MoD AbS                    # #
@@ -21,15 +21,17 @@ import time
 import numpy as np
 import string,sys,os
 import argparse
-import pyfits
+#import pyfits
 import itertools
 from astropy import wcs
 from astropy.io import fits
 from scipy.ndimage.interpolation import zoom
 from scipy.interpolate import interp1d
+from scipy.interpolate import Rbf
 from matplotlib import pyplot as plt
 from matplotlib import rc
 from matplotlib import gridspec
+from matplotlib.colors import LogNorm
 from pylab import contour,cm,clabel
 
 #load magic python notebook module
@@ -48,7 +50,7 @@ print'Modules Imported'
 #     - Path to continuum image
 #     - Path to spectrum
 
-# In[11]:
+# In[316]:
 
 #-------------------------------------------------#
 #Directories                                      # 
@@ -124,7 +126,7 @@ C=2.99792458E5
 #     - Convert DMS -> degrees
 #     - Convolve with a Gaussian
 
-# In[12]:
+# In[317]:
 
 
 
@@ -142,7 +144,7 @@ def writeTable(self,out_table):
         table_out=open(out_table, "aw")
         #write title line if table does not exist
         title_line_1='''#RUN,GAL,RA,DEC,z,v_sys[kms],D_L[Mpc],PA_cont[degrees],'''
-        title_line_2='''R_max[pc],R_min[pc],H[pc],I[degrees],PA[degrees]'''
+        title_line_2='''R_max[pc],R_min[pc],H[pc],I[degrees],PA[degrees],'''
         title_line_3='''R_maxD2[pc],R_minD2[pc],H_D2[pc],I_D2[degrees],PA_D2[degrees],'''
         title_line_4='''v_rot[kms],sign[-],v_res[kms],'''
         title_line_5='''res_in[pc],res_fin[pc],med_res,disp_res\n'''
@@ -224,7 +226,7 @@ def convoluzion(self,convo):
 
 
 
-# In[13]:
+# In[318]:
 
 #-------------------------------------------------#
 #SET the VARIABLES                                #
@@ -318,18 +320,20 @@ class variables:
         #convert to degrees
         self.ra=ra2deg(self.RA)
         self.dec=dec2deg(self.DEC)
-        #convert degrees to radians
-        self.PA_C_rad=math.radians(self.PA_C)
+                
+        #-------------------------------------------------#
+        #Define limit arrays for ITERATION                #
+        #-------------------------------------------------#
         
-        
-        #define limit arrays of parameters
-        
-        self.I_LIM=[30.,90.]
-        self.PA_LIM=[-60.,120.]
-        
+        self.I_LIM=[20.,70.]
+        self.PA_LIM=[-60.,60.]
+        self.PA_C_LIM=[-30.,70.]
         
         return self
-
+    
+    #-------------------------------------------------#
+    #Read the PARAMETER FILE                          #
+    #-------------------------------------------------#
     def readFile(parameterFile):
         
             parameters={}
@@ -353,10 +357,12 @@ class variables:
     
             return parameters
             
-    
+#-------------------------------------------------#
+#Call class VARIABLES                             #
+#-------------------------------------------------#   
 
-    
 v=variables()
+#define the self set of variables
 self=v.set_variables()
 
 
@@ -370,7 +376,7 @@ print 'NORMAL TERMINATION'
 #     - Compute integrated absorption line for each disk and merge them together
 #     - Determine residuals of modelled spectrum w.r.t. observed one
 
-# In[14]:
+# In[319]:
 
 #-------------------------------------------------#
 #Continuum CUBE: Input for the absorption        #
@@ -379,7 +385,7 @@ print 'NORMAL TERMINATION'
 def build_continuum(self,x_los,y_los):
         
         #Load continuum: 
-        f=pyfits.open(filecont)
+        f=fits.open(filecont)
         dati=f[0].data
         head=f[0].header
         dati=np.squeeze(dati)
@@ -469,6 +475,8 @@ def space(self,z_cube,y_cube,x_cube,continuum_cube):
         #trigonometric parameters of the disk
         i_rad=math.radians(self.i)
         pa_rad=math.radians(self.pa)
+ 
+        self.PA_C_rad=math.radians(self.PA_C)
 
         #Disk
         cos_i = np.cos(i_rad)
@@ -660,7 +668,7 @@ def chi_res(self,s_mod,s_obs):
 
 # ** PLOT SPECTRUM and DISK **
 
-# In[15]:
+# In[320]:
 
 #-------------------------------------------------#
 # PLOT function                                   #
@@ -927,7 +935,7 @@ def plot_figure(self,spec_obs,spec_int,res,mod,obs,outfile_fig,flusso,continuum_
 
 # ** LINE CALCULATOR: from the continuum defines the absorbed cube line and plots **
 
-# In[16]:
+# In[321]:
 
 def disk_one(self,continuum_cube_z,continuum_cube_z2,continuum_image,z_los,y_los,x_los):
     #-------------------------------------------------#
@@ -1027,7 +1035,7 @@ def disk_one(self,continuum_cube_z,continuum_cube_z2,continuum_image,z_los,y_los
     
     self.NOISE_RES=np.std(residuals[1,:])
     self.MED_RES=np.median(residuals[1,:])
-        
+            
     #-------------------------------------------------#
     #Write new line in output table                   #
     #-------------------------------------------------#
@@ -1040,7 +1048,7 @@ def disk_one(self,continuum_cube_z,continuum_cube_z2,continuum_image,z_los,y_los
     #--------------------------------------------------#
 
     #define smart names for the output figure
-    outfile_fig=root_out+'spec_fit_'+str(int(self.RUN))+'.png'
+    outfile_fig=root_out+'spec_fit_'+str(int(self.I))+'_'+str(int(self.PA))+'_'+str(int(self.PA_C))+'.png'
 
 
     print '...Begin Plotting...\n'
@@ -1057,13 +1065,9 @@ def disk_one(self,continuum_cube_z,continuum_cube_z2,continuum_image,z_los,y_los
         
 
 
-# ** Input PARAMETERS of the DISK **
-#     - variables from the parameter file
-#     - velocity array
-#     - cube
-#     - output image filename
+# ** Define the cube & the variable parameters **
 
-# In[17]:
+# In[322]:
 
 
 
@@ -1071,8 +1075,8 @@ def disk_one(self,continuum_cube_z,continuum_cube_z2,continuum_image,z_los,y_los
 #CUBE                                             #
 #-------------------------------------------------#
 
-print 'INPUT DISK\n'
 print '********************\n'   
+print 'INPUT CUBE\n'
 
 #build the cube which contains my disk based on its (RMAX)
 #and on the resolution of the 1st cycle
@@ -1112,10 +1116,35 @@ print '********************\n'
 #VARIABLE PARAMETERS                              #
 #-------------------------------------------------#
 
-PA_vec=np.arange(self.PA_LIM[0],self.PA_LIM[-1]+self.STEP,self.STEP)
+#PA_vec=np.arange(self.PA_LIM[0],self.PA_LIM[-1]+self.STEP,self.STEP)
 I_vec=np.arange(self.I_LIM[0],self.I_LIM[-1]+self.STEP,self.STEP)
+#PA_C_vec=np.arange(self.PA_C_LIM[0],self.PA_C_LIM[-1]+self.STEP,self.STEP)
+PA_C_vec=np.linspace(self.PA_C_LIM[0],self.PA_C_LIM[-1],len(I_vec))
+PA_vec=np.linspace(self.PA_LIM[0],self.PA_LIM[-1],len(I_vec))
 
-var_comb=list(itertools.product(I_vec,PA_vec))
+s=np.array([I_vec,PA_vec,PA_C_vec])
+
+#grids_x,grids_y,grids_z = np.meshgrid(PA_vec,I_vec,PA_C_vec)
+
+#print grids_x[0,-1,0],grids_y[0,0,0],grids_z[0,0,0]
+#print grids_x[0],grids_z[0]
+#print grids_x[1],grids_z[1]
+#print grids_x[2],grids_z[2]
+
+#print grids_x.shape,grids_y.shape,grids_z.shape
+
+var_comb=list(itertools.product(*s))
+
+s=np.array([I_vec,PA_vec,PA_C_vec])
+grids_x,grids_y,grids_z = np.meshgrid(I_vec,PA_vec,PA_C_vec)
+
+print 'These are the variables of the parameter space (I,PA,PA_C):'
+print s
+
+
+
+print 'READY for '+str(len(var_comb))+' runs'
+
 
 ###################################################
 
@@ -1132,7 +1161,7 @@ var_comb=list(itertools.product(I_vec,PA_vec))
 #     - convolve integrated spectrum
 #     - normalize spectrum to peak of observed spectrum
 
-# In[ ]:
+# In[323]:
 
 #-------------------------------------------------#
 #MAIN MAIN MAIN                                   #
@@ -1180,22 +1209,79 @@ continuum_image[index_mask] = 0.0
 #-------------------------------------------------#
 
 
-for i in xrange(0,len(var_comb)):
+#for i in xrange(0,len(var_comb)):
     
     
     #set variables
-    self.RUN=i+1
-    self.I=var_comb[i][0]
-    self.PA=var_comb[i][1]
+#    self.RUN=i+1
+    
+#    print '********************'   
+
+#    print "\tRUN %f" % (self.RUN)  
+
+#    print '********************'     
+    
+#    self.I=var_comb[i][0]
+#    self.PA=var_comb[i][1]
+#    self.PA_C=var_comb[i][2]
     
     #copy continuum cube
-    cont1=continuum_cube_z.copy()
-    cont2=continuum_cube_z2.copy()
+#    cont1=continuum_cube_z.copy()
+#    cont2=continuum_cube_z2.copy()
     
-    c_im=continuum_image.copy()
+#    c_im=continuum_image.copy()
 
-    disk_one(self,cont1,cont2,c_im,z_los,y_los,x_los)
+#    disk_one(self,cont1,cont2,c_im,z_los,y_los,x_los)
+    
+#    if self.RUN == 1:
+#        validation_array=np.array([self.RUN,self.I,self.PA,self.PA_C,self.NOISE_RES])
+#    else:
+#        validation_array=np.vstack((validation_array,[self.RUN,self.I,self.PA,self.PA_C,self.NOISE_RES]))
 
+
+
+grid_f=np.copy(grids_x)*np.nan
+
+
+count=1
+for i in xrange (grids_x.shape[0]):
+    for j in xrange (grids_x.shape[1]):
+        for k in xrange (grids_x.shape[2]):
+            
+                #set variables
+                self.RUN=count
+    
+                print '********************'   
+
+                print "\tRUN %f" % (self.RUN)  
+
+                print '********************'     
+    
+                self.I=grids_x[i,j,k]
+                self.PA=grids_y[i,j,k]
+                self.PA_C=grids_z[i,j,k]
+    
+                #copy continuum cube
+                cont1=continuum_cube_z.copy()
+                cont2=continuum_cube_z2.copy()
+    
+                c_im=continuum_image.copy()
+
+                disk_one(self,cont1,cont2,c_im,z_los,y_los,x_los)
+    
+                #if self.RUN == 1:
+                #    validation_array=np.array([self.RUN,self.I,self.PA,self.PA_C,self.NOISE_RES])
+                #else:
+                #    validation_array=np.vstack((validation_array,[self.RUN,self.I,self.PA,self.PA_C,self.NOISE_RES]))
+                
+                count+=1
+                
+                grid_f[i,j,k]=self.NOISE_RES
+        
+        
+        
+        
+print '********************'   
 
 print '...End... \n'
 
@@ -1216,14 +1302,238 @@ print '********************\n'
 ###################################################
 
 
+# In[364]:
+
+#-------------------------------------------------#
+#PLOT for STATISTICAL ANALYSIS                    #
+#-------------------------------------------------#
+
+
+def plot_anal(self,grid_f,grid_x,grid_y,grid_z,s):
+
+    
+    
+    
+    
+    #define figure parameters  
+    params = {'legend.fontsize': 14,
+           'axes.linewidth':2,
+            'axes.labelsize':22,
+           'lines.linewidth':1,
+           'legend.linewidth': 3,
+           'xtick.labelsize':22,
+           'ytick.labelsize':22,
+           'xlabel.fontsize':22,
+           'ylabel.fontsize':22,
+           'text.usetex': True,
+           'text.latex.unicode' : True }
+    rc('font',**{'family':'serif','serif':['serif']})
+    plt.rcParams.update(params)
+          
+
+    #-------------------------------------------------#
+    # Set FIGURE and GRID                             #
+    #-------------------------------------------------#
+    
+    
+    fig_a, ax = plt.subplots(2, 2,figsize=(11, 11))
+
+
+    
+    #-------------------------------------------------#
+    # Plot the spectrum and parameters of the disk    #
+    #-------------------------------------------------#
+    
+    #define subplots
+    ax_pai=ax[0,0]
+    ax_ic=ax[1,0]
+    ax_pac=ax[1,1]
+    ax_blank=ax[0,1]
+
+    ax_blank.axis('off')
+
+ 
+    #define colormap
+    cm = plt.cm.get_cmap('YlOrBr_r')
+
+    # find best FIT
+    mini=np.min(grid_f)
+    
+    index_min= grid_f == mini    
+    
+    print grid_x[index_min], grid_y[index_min], grid_z[index_min]
+    
+    #-------------------------------------------------#
+    # PLOT 1: I & PA figure                           #
+    #-------------------------------------------------# 
+  
+    #Flattening for plot 1
+
+    ipa=np.nanmean(grid_f,axis=2)
+    
+    print len(ipa)
+    sort_grid=ipa.flatten()
+    np.sort(sort_grid)
+    
+    cont10=sort_grid[int(len(sort_grid)/100.*10.)]
+    
+    print len(sort_grid)
+    print cont10
+    
+    
+    
+    #Plot I vs PA
+    ax_pai.imshow(ipa,origin='lower',cmap=cm,interpolation='lanczos',
+                  extent=[s[0][0],s[0][-1],s[1][0],s[1][-1]],alpha=1.,   
+                  norm=LogNorm(vmin=ipa.min(), vmax=ipa.max()))      
+    ax_pai.scatter(grid_x[index_min], grid_y[index_min], marker='+',s=8e2,c='red')
+    
+    cont=[cont10]
+    ax_pai.contour(ipa,cont,origin='lower',
+                     colors='black',linewidths=3,ls='-.',extent=[s[0][0],s[0][-1],s[1][0],s[1][-1]])
+    # set labels and ticks
+    ax_pai.set_xlabel(r'I [$^\circ$]')
+    ax_pai.set_ylabel(r'PA [$^\circ$]')
+    ax_pai.xaxis.set_label_position('top') 
+
+
+    # Set the ticks and labels...
+    #ticks_i = np.linspace(x_val.min(), x_val.max(), 6)
+    #ax_pai.set_xticklabels(ticks_i)
+    
+    #ticks_pa = np.linspace(y_val.min(), y_val.max(), 6)
+    #ax_pai.set_yticklabels(ticks_pa)
+
+    
+    ax_pai.xaxis.tick_top()
+    ax_pai.set_aspect('auto')
+
+    ax_pai.set(adjustable='box-forced')
+    
+    #-------------------------------------------------#
+    # PLOT 2: I & PA_C figure                         #
+    #-------------------------------------------------# 
+   
+    #Flattening for plot 2
+
+    ic=np.nanmean(grid_f,axis=1)
+    
+    ic=numpy.flipud(ic)
+
+    sort_grid=ic.flatten()
+    np.sort(sort_grid)    
+    cont10=sort_grid[int(len(sort_grid)/100.*10.)]
+    
+    
+    #ic=np.swapaxes(ic,0,1)
+    #Plot I vs PA continuum
+    ax_ic.imshow(ic,origin='lower',cmap=cm,interpolation='lanczos',
+                  extent=[s[0][0],s[0][-1],s[2][0],s[2][-1]],alpha=1., vmin=ic.min(),vmax=ic.max(),  
+                  norm=LogNorm(vmin=ic.min(), vmax=ic.max()) )      
+    ax_ic.scatter(grid_x[index_min], grid_z[index_min], marker='+',s=8e2,c='red')
+
+    ax_ic.contour(ic,cont,origin='lower',
+                     colors='black',linewidths=3,ls='-.',extent=[s[0][0],s[0][-1],s[2][0],s[2][-1]])
+    
+    #set ticks and labels
+    ax_ic.set_xlabel(r'I [$^\circ$]')
+    ax_ic.set_ylabel(r'PA continuum [$^\circ$]')
+
+    ax_ic.set_aspect('auto')
+    ax_ic.set(adjustable='box-forced')
+
+    #-------------------------------------------------#
+    # PLOT 3: PA & PA_C figure                        #
+    #-------------------------------------------------# 
+
+    #Flattening for plot 3
+    
+    pac=np.nanmean(grid_f,axis=0)
+
+    pac=numpy.flipud(pac)
+
+    
+    sort_grid=pac.flatten()
+    np.sort(sort_grid)    
+    cont10=sort_grid[int(len(sort_grid)/100.*10.)]
+    
+    print int(len(sort_grid)/100.*10.)
+    
+    #plot PA vs PA continuum
+    ax_pac.imshow(pac,origin='lower',cmap=cm,interpolation='lanczos',
+                  extent=[s[1][0],s[1][-1],s[2][0],s[2][-1]],alpha=1.,
+                  norm=LogNorm(vmin=pac.min(), vmax=pac.max()))       
+    ax_pac.scatter(grid_y[index_min], grid_z[index_min], marker='+',s=8e2,c='red')
+   
+    ax_pac.contour(pac,cont,origin='lower',
+                     colors='black',linewidths=3,ls='-.',extent=[s[1][0],s[1][-1],s[2][0],s[2][-1]])
+    
+    #set ticks and labels
+    ax_pac.set_xlabel(r'PA [$^\circ$]')
+    ax_pac.set_ylabel(r'PA continuum [$^\circ$]')
+    ax_pac.yaxis.tick_right()
+    ax_pac.yaxis.set_label_position('right') 
+
+    ax_pac.set_aspect('auto')
+    ax_pac.set(adjustable='box-forced')
+    
+    fig_a.subplots_adjust(wspace=0, hspace=0)
+    
+    fig_a.show()
+    #-------------------------------------------------#
+    # Save figure                                     #
+    #-------------------------------------------------#   
+    outfile_fig=root_out+'val_par.png'
+    
+    fig_a.savefig(outfile_fig,format='png',bbox_inches='tight')  
+    
+
+    return 0
+
+
+# In[365]:
+
+#-------------------------------------------------#
+# READ table and plot validation plots            #
+#-------------------------------------------------#
+
+
+
+#LOAD from TABLE
+#val_arr = np.genfromtxt(out_table, delimiter=',', names=True,dtype=None)
+#validation_array=np.array([val_arr['Idegrees'],val_arr['PAdegrees'],
+#                           val_arr['PA_contdegrees'],val_arr['disp_res']])
+#f_val=validation_array[3,:]
+#a=grids_x.shape
+#f_val=f_val.reshape(a)
+
+#grid_f=np.copy(grids_x)*np.nan
+
+#for i in xrange (grids_x.shape[0]):
+#    for j in xrange (grids_x.shape[1]):
+#        for k in xrange (grids_x.shape[2]):
+
+#            grid_f[i,j,k]=f_val[i,j,k]
+
+
+
+print '********************'   
+print s
+print '********************'   
+
+
+
+plot_anal(self,grid_f,grids_x,grids_y,grids_z,s)
+
+print 'NORMAL TERMINATION'
+
+
 # In[ ]:
 
 
 
 
 # In[ ]:
-
-
 
 
 
