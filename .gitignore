@@ -13,7 +13,6 @@
 simulate_continuum/
 special_cases/
 old_software/
-MoD_AbS/
 MoD_AbS_script.py
 MoD_AbS_mcmc_mod.py
 NGC1167/
