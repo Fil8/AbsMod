@@ -63,9 +63,6 @@ print pyaml.dump(cfg_par)
 #-------------------------------------------------#
 #Set output directories and filenames             #
 #-------------------------------------------------#
-
-
-
 key = 'general'
 
 #IN
