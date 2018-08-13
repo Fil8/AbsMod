@@ -60,6 +60,7 @@ plot_pars:
 mcmc_pars:
   __helpstr: parameters for MCMC simulation. Does not consider disk_2, if enabled
   enable: False
+  flat: True
   ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
   nwalkers_mcmc: 6  #must be even, number of seeds with which investigsate the parameter space
   nsteps_mcmc: 5    # number of steps for each walker to investigate the parameter space
