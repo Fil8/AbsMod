@@ -64,6 +64,18 @@ mcmc_pars:
   nwalkers_mcmc: 6  #must be even, number of seeds with which investigsate the parameter space
   nsteps_mcmc: 5    # number of steps for each walker to investigate the parameter space
   I_left: 0.0     #left edge of inclinations interval to investigate
+  I_right: 179.0  # rigth edge of inclinations interval to investigate
+  PA_left: 0.0    #left edge of position angles interval to investigate
+  PA_right: 90.0    #right edge of position angles interval to investigate
+
+
+nestle_pars:
+  __helpstr: parameters for multinest simulation. Does not consider disk_2, if enabled
+  enable: False
+  #ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
+  #nwalkers_mcmc: 6  #must be even, number of seeds with which investigsate the parameter space
+  #nsteps_mcmc: 5    # number of steps for each walker to investigate the parameter space
+  I_left: 0.0     #left edge of inclinations interval to investigate
   I_right: 175.0  # rigth edge of inclinations interval to investigate
   PA_left: 0.0    #left edge of position angles interval to investigate
   PA_right: 90.0    #right edge of position angles interval to investigate

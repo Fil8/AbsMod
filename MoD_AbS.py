@@ -12,7 +12,7 @@ from astropy import units as u
 from astropy.table import Table, Column, MaskedColumn
 
 import emcee
-
+import nestle
 
 # Import MoD_AbS modules
 sys.path.append('/Users/maccagni/notebooks/MoD_AbS/'+'/MoD_modules')
@@ -21,6 +21,8 @@ import spectrum as spec
 import fitsealing as cont
 import stats as stats
 import mcmc_MoD as mcmcmod
+import nestle_MoD as nestlemod
+
 import plot_MoD as plotmod
 # file_default = '/Users/maccagni/notebooks/MoD_AbS/MoD_AbS_cfg_default.yml'
 
@@ -115,6 +117,17 @@ if cfg_par[key].get('enable', False) == True :
     RUN = mcmcmod.run_sim(continuum_cube_z, cfg_par)
 
     print '... end EMCEE ...\n'
+
+
+
+key = 'nestle_pars'
+if cfg_par[key].get('enable', False) == True :
+
+    print '... start NESTLE ...\n'
+
+    RUN = nestlemod.run_sim(continuum_cube_z, cfg_par)
+
+    print '... end NESTLE ...\n'
 
 #--------------------------------------------------#
 # Plot  MCMC                                       #
@@ -231,6 +244,9 @@ if cfg_par[key].get('enable', False) == True :
 
     FWHM, FW20 = stats.widths(spec_full)
 
+    line_pars = {'FWHM':np.round(FWHM,2), 'FW20': np.round(FW20,2)}
+    cfg_par['line_pars'] = line_pars
+    print cfg_par['line_pars']
     #-------------------------------------------------#
     #Write new line in output table                   #
     #-------------------------------------------------#

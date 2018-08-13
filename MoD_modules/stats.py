@@ -137,6 +137,8 @@ def write_table(out_table, cfg_par):
 	RES = cfg_par['res_pars'].get('pix_res', 100)
 	RES_FIN = cfg_par['res_pars'].get('pix_res_fin', 50)
 
+	FW20 = cfg_par['line_pars'].get('FW20',np.nan)
+	FWHM = cfg_par['line_pars'].get('FWHM',np.nan)
 
 	#open output table
 	if os.path.exists(out_table) is True: 
@@ -157,8 +159,10 @@ def write_table(out_table, cfg_par):
 		title_line_2 = '''R_max[pc],R_min[pc],H[pc],I[degrees],PA[degrees]'''
 		title_line_3 = '''R_maxD2[pc],R_minD2[pc],H_D2[pc],I_D2[degrees],PA_D2[degrees],'''
 		title_line_4 = '''v_rot[kms],sign[-],v_res[kms],'''
-		title_line_5 = '''res_in[pc],res_fin[pc],chi_square\n'''
-		title_line = title_line_1+title_line_2+title_line_3+title_line_4+title_line_5
+		title_line_5 = '''res_in[pc],res_fin[pc],chi_square,'''
+		title_line_6 = '''FWHM[kms],FW20[kms]\n'''
+
+		title_line = title_line_1+title_line_2+title_line_3+title_line_4+title_line_5+title_line_6
 		table_out.write(title_line)
 		table_out.close() 
 		RUN = 0
@@ -170,9 +174,10 @@ def write_table(out_table, cfg_par):
 	line_3 = str(RMAX)+''','''+str(RMIN)+''','''+str(H0)+','+str(I)+','+str(PA)+''','''+str(SIGN) +''','''  
 	line_4 = str(RMAXD2)+''','''+str(RMIND2)+''','''+str(H0D2)+''','''+str(ID2)+''','''+str(PAD2)+''','''+str(SIGND2)+''','''
 	line_5 = str(VROT)+''','''+str(2*DISP)+''',''' 
-	line_6 = str(RES)+''','''+str(RES_FIN)+'''\n'''
+	line_6 = str(RES)+''','''+str(RES_FIN)+''','''
+	line_7 = str(FWHM)+''','''+str(FW20)+'''\n'''
 
-	line = line_1+line_2+line_3+line_4+line_5+line_6
+	line = line_1+line_2+line_3+line_4+line_5+line_6+line_7	
 	table_out.write(line) 
 	
 	table_out.close()
@@ -211,7 +216,6 @@ def write_table_mcmc(out_table, cfg_par):
 	RES = cfg_par['res_pars'].get('pix_res', 100)
 	RES_FIN = cfg_par['res_pars'].get('pix_res_fin', 50)
 
-
 	#open output table
 	if os.path.exists(out_table) is True: 
 		table_out = open(out_table, "r")
@@ -231,7 +235,8 @@ def write_table_mcmc(out_table, cfg_par):
 		title_line_2 = '''RA,DEC,z,v_sys[kms],D_L[Mpc],PA_cont[degrees],'''
 		title_line_3 = '''R_max[pc],R_min[pc],H[pc],'''
 		title_line_4 = '''v_rot[kms],sign[-],v_res[kms],'''
-		title_line_5 = '''res_in[pc],res_fin[pc],chi_square\n'''
+		title_line_5 = '''res_in[pc],res_fin[pc]'''
+
 		title_line = title_line_1+title_line_2+title_line_3+title_line_4+title_line_5
 		table_out.write(title_line)
 		table_out.close() 
@@ -243,7 +248,7 @@ def write_table_mcmc(out_table, cfg_par):
 	line_2 = str(RA)+''','''+str(DEC)+''','''+str(z_red)+''','''+str(VSYS)+''','''+str(D_L)+''','''+str(PA_C)+''','''  
 	line_3 = str(RMAX)+''','''+str(RMIN)+''','''+str(H0)+''','''+str(SIGN) +''','''  
 	line_4 = str(VROT)+''','''+str(2*DISP)+''',''' 
-	line_5 = str(RES)+''','''+str(RES_FIN)+'''\n'''
+	line_5 = str(RES)+''','''+str(RES_FIN)+''','''
 
 	line = line_1+line_2+line_3+line_4+line_5
 	table_out.write(line) 
