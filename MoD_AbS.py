@@ -227,9 +227,14 @@ if cfg_par[key].get('enable', False) == True :
     #-------------------------------------------------#
         
     print '...normalize spectrum...\n'
-            
-    spec_int_mod = stats.normalize(spec_int,spec_obs)
+    
+    print spec_int
+    if cfg_par['general'].get('spectrum_type') == 'real':
 
+        spec_int_mod = stats.normalize(spec_int,spec_obs)
+    else:
+        spec_int_mod = spec_int[1,:].copy()
+    
     spec_full = np.array([vels, spec_int_mod])
 
     print '********************\n'

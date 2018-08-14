@@ -25,32 +25,47 @@ def chi_res(s_mod, s_obs,cfg_par):
 	VROT = cfg_par['vel_pars'].get('vrot', 200)
 	DISP = cfg_par['vel_pars'].get('disp', 200)
 
+	if cfg_par['general'].get('spectrum_type') == 'real':
+		#interpolate to have arrays all of the same length
+		func_obs = interp1d(s_obs[:, 0], s_obs[:, 1])
+		func_mod = interp1d(s_mod[0, :], s_mod[1, :])
+		
+		#create a new array long enough
+		vel_int = np.arange(-VROT, VROT + DISP, 2. * DISP)
 
-	#interpolate to have arrays all of the same length
-	func_obs = interp1d(s_obs[:, 0], s_obs[:, 1])
-	func_mod = interp1d(s_mod[0, :], s_mod[1, :])
-	
-	#create a new array long enough
-	vel_int = np.arange(-VROT, VROT + DISP, 2. * DISP)
+		#determine the fluxes of observed 
+		#and modelled spectra
+		
+		obs_int = func_obs(vel_int)
+		mod_int = func_mod(vel_int)
 
-	#determine the fluxes of observed 
-	#and modelled spectra
-	
-	obs_int = func_obs(vel_int)
-	mod_int = func_mod(vel_int)
+		#determine residuals array
+		res = obs_int-mod_int
 
-	#determine residuals array
-	res = obs_int-mod_int
+		#set arrays for output
+		res_out = np.array([vel_int, res])
+		obs_out = np.array([vel_int, obs_int])
+		mod_out = np.array([vel_int, mod_int])
+		
+		noise = np.std(obs_out[1, :])
+		inv_noise = 1./(noise*noise)
+		
+		chi_square = -0.5*np.sum((np.power(res_out[1, :], 2)*inv_noise-np.log(inv_noise)))
+	
+	else:
+		chi_square = 0.0
+		func_mod = interp1d(s_mod[0, :], s_mod[1, :])
+		vel_int = np.arange(-VROT, VROT + DISP, 2. * DISP)
+		mod_int = func_mod(vel_int)
+		mod_out = np.array([vel_int, mod_int])
 
-	#set arrays for output
-	res_out = np.array([vel_int, res])
-	obs_out = np.array([vel_int, obs_int])
-	mod_out = np.array([vel_int, mod_int])
-	
-	noise = np.std(obs_out[1, :])
-	inv_noise = 1./(noise*noise)
-	
-	chi_square = -0.5*np.sum((np.power(res_out[1, :], 2)*inv_noise-np.log(inv_noise)))
+		res_out = np.zeros([2,len(vel_int)])
+		res_out[0,:] = vel_int
+		res_out[1,:] = 0.0
+ 		obs_out = np.zeros([2, len(vel_int)])	
+ 		obs_out[0,:] = vel_int
+ 		obs_out[1,:] = 0.0	
+
 	
 	return res_out, obs_out, mod_out, chi_square
 

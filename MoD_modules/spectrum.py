@@ -13,11 +13,17 @@ def input_spectrum(cfg_par):
 
 
 	#load observed spectrum
-	spec_obs = np.loadtxt(workdir+filespec)
-	#convert in frequency given the systemic velocity
-	spec_obs[:, 0] = (HI_hz/spec_obs[:, 0]-1)*C
-	spec_obs[:, 0] = spec_obs[:, 0]-VSYS
 
+	if cfg_par['general'].get('spectrum_type') == 'real':
+		spec_obs = np.loadtxt(workdir+filespec)
+		#convert in frequency given the systemic velocity
+		spec_obs[:, 0] = (HI_hz/spec_obs[:, 0]-1)*C
+		spec_obs[:, 0] = spec_obs[:, 0]-VSYS
+
+	else:
+		spec_obs=np.zeros([100,2])
+		spec_obs[:, 0] = np.linspace(-350,350,100)
+		spec_obs[:, 1] = 0.0
 
 	vels = np.hstack([1.5*spec_obs[0, 0]-0.5*spec_obs[1, 0],
 	                  0.5*(spec_obs[0:-1, 0]+spec_obs[1:, 0]),

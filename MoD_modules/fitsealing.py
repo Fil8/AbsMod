@@ -12,18 +12,18 @@ import disk as disk
 def clean_header(header):
 
 
-	if 'NAXIS4' in header:
-		del header['NAXIS4']        
+	if 'CTYPE4' in header:
+	#	del header['NAXIS4']        
 		del header['CTYPE4']
 		del header['CDELT4']    
 		del header['CRVAL4']
 		del header['CRPIX4']
-	if 'NAXIS3' in header:
+	if 'CTYPE3' in header:
 		del header['CRPIX3'] 
 		del header['CRVAL3']
 		del header['CDELT3']
 		del header['CTYPE3']
-		del header['NAXIS3']
+	#	del header['NAXIS3']
 	
 	header['NAXIS'] = 2 
 
@@ -69,14 +69,14 @@ def build_continuum(cfg_par):
 
 	#load the continuum image
 	head = fits.getheader(workdir+filecont)
-
 	head = clean_header(head)
-
+	#print head
 	w = wcs.WCS(head)    
 	#convert coordinates in pixels
-	#cen_x,cen_y=w.wcs_world2pix(ra,dec,0)
-	cen_x, cen_y = w.wcs_world2pix(ra, dec, 1)
-	
+	cen_x,cen_y=w.wcs_world2pix(ra,dec,0)
+	#cen_x, cen_y = w.wcs_world2pix(ra, dec, 1)
+	cen_x = np.round(cen_x,0)
+	cen_y = np.round(cen_y,0)
 	print '\tContinuum centre [pixel]:\t'+'x: '+str(cen_x)+'\ty: '+str(cen_y) 
 	print '\tContinuum pixel size [pc]:\t'+str(scale_cont_pc)+'\n'
 		  
@@ -88,12 +88,12 @@ def build_continuum(cfg_par):
 
 	x_los, y_los, z_los = disk.main_box(cfg_par)
 
-
 	#on the continuum image
 	x_los_num_right = x_los[-1]/scale_cont_pc
 	x_los_num_left = x_los[0]/scale_cont_pc
 	y_los_num_up = y_los[-1]/scale_cont_pc
 	y_los_num_low = y_los[0]/scale_cont_pc
+
 	y_up = cen_y+y_los_num_up
 	x_right = cen_x+x_los_num_right
 	y_low = cen_y+y_los_num_low
@@ -111,7 +111,7 @@ def build_continuum(cfg_par):
 
 	#Top Left corner
 	if cen_y > head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
-
+		print 'topleft'
 		diff_x = int(cen_x*2)
 		diff_y = int(head['NAXIS2']-cen_y)
 
@@ -119,6 +119,7 @@ def build_continuum(cfg_par):
 
 	#Top Right corner
 	if cen_y > head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
+		print 'topright'
 
 		diff_x = int(head['NAXIS1']-cen_x)
 		diff_y = int(head['NAXIS2']-cen_y)
@@ -127,6 +128,9 @@ def build_continuum(cfg_par):
 
 	#Bottom Left corner
 	if cen_y < head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
+		print 'bottomleft'
+		
+
 		diff_x = int(cen_x*2)
 		diff_y = int(cen_y*2)
 
@@ -141,23 +145,29 @@ def build_continuum(cfg_par):
 
 		subcont = dati[0:diff_y,diff_x:head['NAXIS2']]
 
-	rows = head['NAXIS2']- subcont.shape[0]
+	if cen_y == head['NAXIS2']/2 and cen_x == head['NAXIS1']/2:
 
-	zerows = np.zeros([rows/2, subcont.shape[1]])
-	subcont = np.vstack([subcont,zerows])
-	subcont = subcont[::-1,:]
-	subcont = np.vstack([subcont,zerows])
-	subcont = subcont[::-1,:]
+		subcont = dati[:,:]
 
-	columns = head['NAXIS1']- subcont.shape[1]
-	zercolumn = np.zeros([head['NAXIS2'],columns/2])
-	subcont = np.hstack([subcont,zercolumn])
-	subcont = subcont[:,::-1]
-	subcont = np.hstack([subcont,zercolumn])
-	subcont = subcont[:,::-1]
+	#rows = head['NAXIS2']- subcont.shape[0]
+	#zerows = np.zeros([rows/2, subcont.shape[1]])
+	#subcont = np.vstack([subcont,zerows])
+	#subcont = subcont[::-1,:]
+	#subcont = np.vstack([subcont,zerows])
+	#subcont = subcont[::-1,:]
+
+	#columns = head['NAXIS1']- subcont.shape[1]
+#	zercolumn = np.zeros([head['NAXIS2'],columns/2])
+	#zercolumn = np.zeros([head['NAXIS2']-1,columns/2])
+
+	#subcont = np.hstack([subcont,zercolumn])
+	#subcont = subcont[:,::-1]
+	#subcont = np.hstack([subcont,zercolumn])
+	#subcont = subcont[:,::-1]
 
 	#determine how much I have to interpolate     
 	zoom_factor = float(len(x_los))/float(len(subcont[0]))
+
 	#interpolate to the desired resolution of the cycle 1 cube
 	zoom_dati = zoom(subcont, zoom_factor, order=3)
 

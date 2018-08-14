@@ -3,6 +3,7 @@ general:
     work_directory: /Users/maccagni/notebooks/MoD_AbS/NGC1167/ 
     continuum_name: NGC1167.fits 
     spectrum_name: spec_NGC1167.txt
+    spectrum_type: real
     model_name: 'bla'
 
 disk_1:
