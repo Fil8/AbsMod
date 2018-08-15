@@ -107,9 +107,12 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     # -------------------------------------------------#
     # NORMALIZE the SPECTRUM to the OBSERVED one       #
     # -------------------------------------------------#
-    spec_int_mod = stats.normalize(spec_int,spec_obs_ln)
-
-
+    if cfg_par['mcmc_pars']['flat'] == False:
+    
+        spec_int_mod = stats.normalize(spec_int,spec_obs_ln)
+    else:
+        spec_int_mod = spec_int[1,:].copy()
+        
     # -------------------------------------------------#
     # Determine residuals & chi2 & widths of the line  #
     # -------------------------------------------------#
@@ -127,7 +130,7 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
         loglike = 0.0
     
     FWHM, FW20 = stats.widths(spec_full)
-    
+    print FWHM, FW20
     line_pars = {'FWHM':np.round(FWHM,2), 'FW20': np.round(FW20,2)}
     cfg_par['line_pars'] = line_pars
 

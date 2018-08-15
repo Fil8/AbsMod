@@ -1,7 +1,7 @@
 general:
     __helpstr: General INPUT directories and filenames
     work_directory: /Users/maccagni/notebooks/MoD_AbS/LL/ 
-    continuum_name: lobe_lobe4.fits 
+    continuum_name: lobe_lobe.fits 
     spectrum_name: ll.txt
     spectrum_type: fake
     model_name: 'lobe_lobe_sim'
@@ -12,8 +12,8 @@ disk_1:
   rmax: 250. # pc, maximum radius of the disk
   rmin: 0.    # pc, minimum radius of the disk (> 0 disk becomes a ring)
   h0: 100.    # pc, height of the disk
-  i: 90.0    # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
-  pa: 90.00   # degrees (0 = North, x = 0 in cartesian coordinates)
+  i: 12.767590002109864    # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
+  pa: 3.256922587355450   # degrees (0 = North, x = 0 in cartesian coordinates)
   sign:  +1.  # red part of disk faces N for i=90 and pa = 0
   
 disk_2:
@@ -61,10 +61,10 @@ plot_pars:
 
 mcmc_pars:
   __helpstr: parameters for MCMC simulation. Does not consider disk_2, if enabled
-  enable: False
+  enable: false
   flat: True
   ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
-  nwalkers_mcmc: 16  #must be even, number of seeds with which investigate the parameter space
+  nwalkers_mcmc: 10  #must be even, number of seeds with which investigate the parameter space
   nsteps_mcmc: 1    # number of steps for each walker to investigate the parameter space
   I_left: 0.0     #left edge of inclinations interval to investigate
   I_right: 179.0  # rigth edge of inclinations interval to investigate
