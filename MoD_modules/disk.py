@@ -91,6 +91,7 @@ def space(z_cube, y_cube, x_cube, continuum_cube, flag, cfg_par):
 		#for plotting: define the disk in front of the continuum
 		disk_front = vel.copy()
 		index_vel = (continuum_cube == 0.0)
+
 		#if np.all(index_vel) != False:
 		vel[index_vel] = -np.inf
 		#condition for DISK 1

@@ -109,61 +109,63 @@ def build_continuum(cfg_par):
 	
 	sub_dati = np.zeros([yshape, xshape])
 
-	#Top Left corner
-	if cen_y > head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
-		print 'topleft'
-		diff_x = int(cen_x*2)
-		diff_y = int(head['NAXIS2']-cen_y)
+	# #Top Left corner
+	# if cen_y > head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
+	# 	print 'topleft'
+	# 	diff_x = int(cen_x*2)
+	# 	diff_y = int(head['NAXIS2']-cen_y)
 
-		subcont = dati[diff_y:head['NAXIS2'],0:diff_x]
+	# 	subcont = dati[diff_y:head['NAXIS2'],0:diff_x]
 
-	#Top Right corner
-	if cen_y > head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
-		print 'topright'
+	# #Top Right corner
+	# if cen_y > head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
+	# 	print 'topright'
 
-		diff_x = int(head['NAXIS1']-cen_x)
-		diff_y = int(head['NAXIS2']-cen_y)
+	# 	diff_x = int(head['NAXIS1']-cen_x)
+	# 	diff_y = int(head['NAXIS2']-cen_y)
 
-		subcont = dati[diff_y:head['NAXIS2'],diff_x:head['NAXIS2']]
+	# 	subcont = dati[diff_y:head['NAXIS2'],diff_x:head['NAXIS2']]
 
-	#Bottom Left corner
-	if cen_y < head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
-		print 'bottomleft'
+	# #Bottom Left corner
+	# if cen_y < head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
+	# 	print 'bottomleft'
 		
 
-		diff_x = int(cen_x*2)
-		diff_y = int(cen_y*2)
+	# 	diff_x = int(cen_x*2)
+	# 	diff_y = int(cen_y*2)
 
-		subcont = dati[0:diff_y,0:diff_x]
+	# 	subcont = dati[0:diff_y,0:diff_x]
 
 
-	#Bottom right corner
-	if cen_y < head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
+	# #Bottom right corner
+	# if cen_y < head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
+	# 	print 'bottomright'
+		
+	# 	diff_x = int(head['NAXIS1']-cen_x)
+	# 	diff_y = int(cen_y*2)
 
-		diff_x = int(head['NAXIS1']-cen_x)
-		diff_y = int(cen_y*2)
+	# 	subcont = dati[0:diff_y,diff_x:head['NAXIS2']]
 
-		subcont = dati[0:diff_y,diff_x:head['NAXIS2']]
+	# if cen_y == head['NAXIS2']/2 and cen_x == head['NAXIS1']/2:
 
-	if cen_y == head['NAXIS2']/2 and cen_x == head['NAXIS1']/2:
+	# 	subcont = dati[:,:]
 
-		subcont = dati[:,:]
+	# rows = head['NAXIS2']- subcont.shape[0]
+	# zerows = np.zeros([rows/2, subcont.shape[1]])
+	# subcont = np.vstack([subcont,zerows])
+	# subcont = subcont[::-1,:]
+	# subcont = np.vstack([subcont,zerows])
+	# subcont = subcont[::-1,:]
 
-	#rows = head['NAXIS2']- subcont.shape[0]
-	#zerows = np.zeros([rows/2, subcont.shape[1]])
-	#subcont = np.vstack([subcont,zerows])
-	#subcont = subcont[::-1,:]
-	#subcont = np.vstack([subcont,zerows])
-	#subcont = subcont[::-1,:]
+	# columns = head['NAXIS1']- subcont.shape[1]
+	# zercolumn = np.zeros([head['NAXIS2'],columns/2])
+	# #zercolumn = np.zeros([head['NAXIS2']-1,columns/2])
 
-	#columns = head['NAXIS1']- subcont.shape[1]
-#	zercolumn = np.zeros([head['NAXIS2'],columns/2])
-	#zercolumn = np.zeros([head['NAXIS2']-1,columns/2])
-
-	#subcont = np.hstack([subcont,zercolumn])
-	#subcont = subcont[:,::-1]
-	#subcont = np.hstack([subcont,zercolumn])
-	#subcont = subcont[:,::-1]
+	# subcont = np.hstack([subcont,zercolumn])
+	# subcont = subcont[:,::-1]
+	# subcont = np.hstack([subcont,zercolumn])
+	# subcont = subcont[:,::-1]
+	subcont = dati[:,:]
 
 	#determine how much I have to interpolate     
 	zoom_factor = float(len(x_los))/float(len(subcont[0]))

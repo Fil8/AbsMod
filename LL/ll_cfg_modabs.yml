@@ -1,7 +1,7 @@
 general:
     __helpstr: General INPUT directories and filenames
     work_directory: /Users/maccagni/notebooks/MoD_AbS/LL/ 
-    continuum_name: lobe_lobe.fits 
+    continuum_name: 3c305.fits 
     spectrum_name: ll.txt
     spectrum_type: fake
     model_name: 'lobe_lobe_sim'
@@ -9,11 +9,11 @@ general:
 disk_1:
   __helpstr: parameters of HI disk 1 (main disk, or outer disk if disk_2 is enabled)
   enable: True
-  rmax: 250. # pc, maximum radius of the disk
+  rmax: 4000. # pc, maximum radius of the disk
   rmin: 0.    # pc, minimum radius of the disk (> 0 disk becomes a ring)
   h0: 100.    # pc, height of the disk
-  i: 12.767590002109864    # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
-  pa: 3.256922587355450   # degrees (0 = North, x = 0 in cartesian coordinates)
+  i: 26    # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
+  pa: 175  # degrees (0 = North, x = 0 in cartesian coordinates)
   sign:  +1.  # red part of disk faces N for i=90 and pa = 0
   
 disk_2:
@@ -32,7 +32,7 @@ vel_pars:
   vrot:  200. #km/s, rotational velocity where the rotation curve is flat
   r_vflat: 5000. #radius at which rotational velocity becomes flat, if kind is set to rising
   disp:  10. #km/s, HI velocity dispersion, is this needed?
-  vel_res:  10.  #km/s, velocity resolution to which convolve the model spectrum, is this used?
+  vel_res:  20.  #km/s, velocity resolution to which convolve the model spectrum, is this used?
 
 abs_pars:
   __helpstr: parameters of continuum for absorbing part of HI disk
@@ -40,31 +40,31 @@ abs_pars:
   flux_cont_lim:  1.e-3 #units of continuum image, cutoff below which continuum is not absorbed
 
 cont_pars:
-  ra: '10:37:19'   #centre of disk in continuum image (likely the core of the continuum source)
-  dec: '+43:35:15'
-  redshift: 0.024694   #redshift of the source
-  d_l: 107.839 # Mpc, luminosity distance, is this parameter needed? (yes, unless you cosmologically compute it)
-  systemic_vel: 7403 # km/s, systemic velocity of the source
+  ra: '+14:49:21.57'   #centre of disk in continuum image (likely the core of the continuum source)
+  dec: '+63:16:13.78'
+  redshift: 0.041639  #redshift of the source
+  d_l: 184.127 # Mpc, luminosity distance, is this parameter needed? (yes, unless you cosmologically compute it)
+  systemic_vel: 12480 # km/s, systemic velocity of the source
 
 res_pars:
   __helpstr: parameters to tune the resolution of the HI disk
-  pix_res: 5.  # pc, coarse resolution to which create the disk
-  pix_res_fin: 2. # pc, final resolution to which the absorbed disk is convolved with scipy.zoom
+  pix_res: 50.  # pc, coarse resolution to which create the disk
+  pix_res_fin: 30. # pc, final resolution to which the absorbed disk is convolved with scipy.zoom
   order:  1     # order of zoom function
 
 plot_pars:
   __helpstr: plotting options
-  enable_figure: True # enable plot of absortion and disk
+  enable_figure: false # enable plot of absortion and disk
   format: 'png' #format for plotting
   enable_mcmc: False #enable for corner plots of mcmc simulation
   mcmc_run: 1 #RUN of MCMC to plot
 
 mcmc_pars:
   __helpstr: parameters for MCMC simulation. Does not consider disk_2, if enabled
-  enable: false
+  enable: true
   flat: True
   ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
-  nwalkers_mcmc: 10  #must be even, number of seeds with which investigate the parameter space
+  nwalkers_mcmc: 4  #must be even, number of seeds with which investigate the parameter space
   nsteps_mcmc: 1    # number of steps for each walker to investigate the parameter space
   I_left: 0.0     #left edge of inclinations interval to investigate
   I_right: 179.0  # rigth edge of inclinations interval to investigate
