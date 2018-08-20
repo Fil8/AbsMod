@@ -21,8 +21,8 @@ def input_spectrum(cfg_par):
 		spec_obs[:, 0] = spec_obs[:, 0]-VSYS
 
 	else:
-		spec_obs=np.zeros([100,2])
-		spec_obs[:, 0] = np.linspace(-350,350,100)
+		spec_obs=np.zeros([200,2])
+		spec_obs[:, 0] = np.linspace(-350,350,200)
 		spec_obs[:, 1] = 0.0
 
 	vels = np.hstack([1.5*spec_obs[0, 0]-0.5*spec_obs[1, 0],

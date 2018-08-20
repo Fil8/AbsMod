@@ -7,6 +7,7 @@ def normalize(spec_int,spec_obs):
 	
 	#normalize modelled spectrum to observed one
 	peak_obs = np.min(spec_obs[:, 1])
+	peak_obs = -1.
 	peak_mod = np.min(spec_int[1, :])
 	if peak_mod < 0.:
 		spec_int_norm = np.divide(spec_int[1, :], peak_mod)
@@ -16,6 +17,18 @@ def normalize(spec_int,spec_obs):
 		spec_int_mod = spec_int[1, :]
 
 	return spec_int_mod
+
+#-------------------------------------------------#
+# Gaussian Convolution                            #
+#-------------------------------------------------#
+
+def convoluzion(convo,DISP):
+        mu=0.0        
+        arg=-((convo[0,:]*convo[0,:])/(2*DISP*DISP))
+        gauss=1./(np.sqrt(2*np.pi)*DISP)*np.exp(arg)
+        convolved_pdf=np.convolve(convo[1,:],gauss,mode='same')
+         
+        return convolved_pdf
 
 #-------------------------------------------------#
 #CHI2 and RESIDUAL spectrum                       #
@@ -87,12 +100,17 @@ def widths(spec_model):
 	left_array = array[0: int(minimum_idx)]
 	right_array = array[int(minimum_idx): len(array)]
 
+	print 'XXXX'
+	print minimum
+	print right_array, left_array
 	fwhm_min = minimum/2. 
-	
+	print fwhm_min
 	left_fwhm_idx = np.max(np.where(np.abs(left_array - fwhm_min) == 
 							 np.abs(left_array - fwhm_min).min())[0])   
 	right_fwhm_idx = np.min(np.where(np.abs(right_array - fwhm_min) == 
 							  np.abs(right_array - fwhm_min).min())[0])
+
+	print left_fwhm_idx, right_fwhm_idx
 	
 	vel_left = array_vels[left_fwhm_idx]
 	vel_right = array_vels[int(minimum_idx+right_fwhm_idx)]
@@ -106,6 +124,8 @@ def widths(spec_model):
 							 np.abs(left_array - fw20_min).min())[0])  
 	right_fw20_idx = np.min(np.where(np.abs(right_array - fw20_min) == 
 							  np.abs(right_array - fw20_min).min())[0])
+
+	print array
 
 	vel_left = array_vels[left_fw20_idx]
 	vel_right = array_vels[int(minimum_idx+right_fw20_idx)]
