@@ -12,8 +12,8 @@ disk_1:
   rmax: 4000. # pc, maximum radius of the disk
   rmin: 0.    # pc, minimum radius of the disk (> 0 disk becomes a ring)
   h0: 100.    # pc, height of the disk
-  i: 83.51643428149005 # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
-  pa:  43.01348112233441   # degrees (0 = North, x = 0 in cartesian coordinates)
+  i:  81.07719132 # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
+  pa:   22.05929786   # degrees (0 = North, x = 0 in cartesian coordinates)
   sign:  +1.  # red part of disk faces N for i=90 and pa = 0
   
 disk_2:
@@ -31,7 +31,7 @@ vel_pars:
   kind: 'flat' #or 'rising' if rotation curve is rising between 0 and r_vflat with slope
   vrot:  200. #km/s, rotational velocity where the rotation curve is flat
   r_vflat: 5000. #radius at which rotational velocity becomes flat, if kind is set to rising
-  disp:  10. #km/s, HI velocity dispersion, is this needed?
+  disp:  20. #km/s, HI velocity dispersion, is this needed?
   vel_res:  1.  #km/s, velocity resolution to which convolve the model spectrum, is this used?
 
 abs_pars:
@@ -64,7 +64,7 @@ mcmc_pars:
   enable: true
   flat: True
   ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
-  nwalkers_mcmc: 4  #must be even, number of seeds with which investigate the parameter space
+  nwalkers_mcmc: 4500  #must be even, number of seeds with which investigate the parameter space
   nsteps_mcmc: 1    # number of steps for each walker to investigate the parameter space
   I_left: 0.0     #left edge of inclinations interval to investigate
   I_right: 179.0  # rigth edge of inclinations interval to investigate

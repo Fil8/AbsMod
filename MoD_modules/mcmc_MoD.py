@@ -102,8 +102,10 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     print '...convolve spectrum...\n'
 
     DISP = cfg_par['vel_pars'].get('disp', 200)
+
     spec_int = stats.convoluzion(spec_int,DISP)
     spec_int = np.array([vels, spec_int])
+    #print cfg_par['disk_1']
     # convolve the spectrum at the desired velocity resolution
     # spec_int[1,:]=smoothing_func(spec_int[1,:])
 
@@ -121,7 +123,6 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     # -------------------------------------------------#
 
     spec_full = np.array([vels, spec_int_mod])
-
     res, mod_res, obs_res = chi_square(spec_full, spec_obs_ln, cfg_par)
 
     noise = np.std(obs_res[1, :])
@@ -132,7 +133,7 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     else:
         loglike = 0.0
     
-    FWHM, multipeak = stats.widths(spec_full)
+    FWHM, multipeak = stats.widths(cfg_par,spec_full)
     line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2)}
     cfg_par['line_pars'] = line_pars
     print cfg_par['line_pars']

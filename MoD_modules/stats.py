@@ -90,7 +90,7 @@ def chi_res(s_mod, s_obs,cfg_par):
 # -------------------------------------------------#
 # FWHM & FW20                                      #
 # -------------------------------------------------#
-def widths(spec_model):
+def widths(cfg_par,spec_model):
 	#find peak of the line
 
 	multipeak = 0
@@ -128,8 +128,15 @@ def widths(spec_model):
 	a = np.diff(np.sign(np.diff(array))).nonzero()[0] + 1 # local min+max
 	b = (np.diff(np.sign(np.diff(array))) > 0).nonzero()[0] + 1 # local min
 	c = (np.diff(np.sign(np.diff(array))) < 0).nonzero()[0] + 1 # local max
+	#print a
+	#print c
 
+	#if len(a) == 0:
+	#	multipeak = 2
+	#	fwhm=0.0
+	#	fwhm_2=0.0
 	if len(a) == 1:
+		#print 'small line'
 		fwhm_min = array[a]/2.
 		left_array = array[0: int(a)]
 		right_array = array[int(a)+1:-1]		 
@@ -138,10 +145,11 @@ def widths(spec_model):
 
 		fwhm =  abs(array_vels[int(a)+right_fwhm_idx] - array_vels[left_fwhm_idx])
 		multipeak=0
+		fwhm_2=fwhm
 	
 
 	elif len(a) ==2:
-
+		#print 'line'
 		fwhm_min = array[b]/2.
 		left_array = array[0: int(b)]
 		right_array = array[int(b)+1:-1]		 
@@ -149,8 +157,10 @@ def widths(spec_model):
 	 	left_fwhm_idx =min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min))  
 	 	right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
 		fwhm =  abs(array_vels[int(b)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+		fwhm_2=fwhm
 		multipeak=0
-	else:
+	elif len(a)>2:
+		#print 'c-line'
 		if len(c)>1:
 			mins = []
 			velmins = []
@@ -163,6 +173,9 @@ def widths(spec_model):
 			index_max = mins.index(minval)
 			
 			c = c[index_max]
+	
+		#elif len(c)
+
 		vel_left = array_vels[0:int(c)]
 		vel_right = array_vels[int(c)+1:-1]
 		idx_one = min(range(len(array)), key=lambda i: abs(array[i]-(-1.)))
@@ -173,7 +186,24 @@ def widths(spec_model):
 		left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-array[c])) 
 		right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-array[c]))
 		fwhm =  abs(array_vels[int(c)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+
+
+		left_array = array[0:a[0]]
+		right_array = array[a[-1]:-1]
+		#print a
+		#print array_vels[a[0]], array_vels[a[-1]]
+		#print right_array
+		fwhm_min = -1./2.
+		left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min)) 
+		right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
+		
+		fwhm_2 =  abs(array_vels[right_fwhm_idx] - array_vels[left_fwhm_idx])		
+		#print fwhm_2
 		multipeak = 1
+	else:
+		#print cfg_par['disk_1']	
+		multipeak=0
+		fwhm=0
 	#print "The dataset appears to have multiple peaks, and thus the FWHM can't be determined."
 
 
