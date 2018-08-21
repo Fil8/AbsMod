@@ -232,7 +232,6 @@ if cfg_par[key].get('enable', False) == True :
         
     print '...normalize spectrum...\n'
     
-    print spec_int
     #if cfg_par['general'].get('spectrum_type') == 'real':
 
     spec_int_mod = stats.normalize(spec_int,spec_obs)
@@ -256,9 +255,9 @@ if cfg_par[key].get('enable', False) == True :
 
     residuals, obs_res, mod_res, CHI_SQ = stats.chi_res(spec_full, spec_obs, cfg_par)
 
-    FWHM, FW20 = stats.widths(spec_full)
+    FWHM, multipeak = stats.widths(spec_full)
 
-    line_pars = {'FWHM':np.round(FWHM,2), 'FW20': np.round(FW20,2)}
+    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2)}
     cfg_par['line_pars'] = line_pars
     print cfg_par['line_pars']
     #-------------------------------------------------#

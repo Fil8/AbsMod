@@ -1,7 +1,12 @@
 import os, string
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.interpolate import splrep, sproot, splev
+from scipy import signal
+from scipy.signal import argrelextrema
 
+class MultiplePeaks(Exception): pass
+class NoPeaksFound(Exception): pass
 
 def normalize(spec_int,spec_obs):
 	
@@ -23,12 +28,12 @@ def normalize(spec_int,spec_obs):
 #-------------------------------------------------#
 
 def convoluzion(convo,DISP):
-        mu=0.0        
-        arg=-((convo[0,:]*convo[0,:])/(2*DISP*DISP))
-        gauss=1./(np.sqrt(2*np.pi)*DISP)*np.exp(arg)
-        convolved_pdf=np.convolve(convo[1,:],gauss,mode='same')
-         
-        return convolved_pdf
+		mu=0.0        
+		arg=-((convo[0,:]*convo[0,:])/(2*DISP*DISP))
+		gauss=1./(np.sqrt(2*np.pi)*DISP)*np.exp(arg)
+		convolved_pdf=np.convolve(convo[1,:],gauss,mode='same')
+		 
+		return convolved_pdf
 
 #-------------------------------------------------#
 #CHI2 and RESIDUAL spectrum                       #
@@ -75,9 +80,9 @@ def chi_res(s_mod, s_obs,cfg_par):
 		res_out = np.zeros([2,len(vel_int)])
 		res_out[0,:] = vel_int
 		res_out[1,:] = 0.0
- 		obs_out = np.zeros([2, len(vel_int)])	
- 		obs_out[0,:] = vel_int
- 		obs_out[1,:] = 0.0	
+		obs_out = np.zeros([2, len(vel_int)])	
+		obs_out[0,:] = vel_int
+		obs_out[1,:] = 0.0	
 
 	
 	return res_out, obs_out, mod_out, chi_square
@@ -87,52 +92,125 @@ def chi_res(s_mod, s_obs,cfg_par):
 # -------------------------------------------------#
 def widths(spec_model):
 	#find peak of the line
+
+	multipeak = 0
+
 	array = spec_model[1, :].copy()
 	array_vels = spec_model[0, :].copy()
 	
-	if sum(array) != 0.0:
-		minimum = np.min(array)
-		minimum_idx = np.where(np.abs(array - minimum) == np.abs(array - minimum).min())[0]
+	# if sum(array) != 0.0:
+	# 	minimum = np.min(array)
+	# 	minimum_idx = np.where(np.abs(array - minimum) == np.abs(array - minimum).min())[0]
+	# else:
+	# 	minimum_idx = 10
+	# 	minimum = 25
+	# #FWHM
+	# left_array = array[0: int(minimum_idx)]
+	# right_array = array[int(minimum_idx): len(array)]
+
+
+	# fwhm_min = minimum/2. 
+	# left_fwhm_idx = np.max(np.where(np.abs(left_array - fwhm_min) == 
+	# 						 np.abs(left_array - fwhm_min).min())[0])   
+	# right_fwhm_idx = np.min(np.where(np.abs(right_array - fwhm_min) == 
+	# 						  np.abs(right_array - fwhm_min).min())[0])
+
+	half_max = np.amin(array)/2.0
+	half_max = np.amax(array)/2.0
+
+	#peak_widths = np.arange(1, 5)
+	#peak_indices = signal.find_peaks_cwt(array, peak_widths)
+	#peak_count = len(peak_indices) # the number of peaks in the array
+	#print peak_widths,peak_indices,peak_count
+	#s = splrep(array_vels, array - half_max, k=5)
+	#roots = sproot(s)
+	#if len(roots) > 2:
+	a = np.diff(np.sign(np.diff(array))).nonzero()[0] + 1 # local min+max
+	b = (np.diff(np.sign(np.diff(array))) > 0).nonzero()[0] + 1 # local min
+	c = (np.diff(np.sign(np.diff(array))) < 0).nonzero()[0] + 1 # local max
+
+	if len(a) == 1:
+		fwhm_min = array[a]/2.
+		left_array = array[0: int(a)]
+		right_array = array[int(a)+1:-1]		 
+	 	left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min)) 
+	 	right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
+
+		fwhm =  abs(array_vels[int(a)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+		multipeak=0
+	
+
+	elif len(a) ==2:
+
+		fwhm_min = array[b]/2.
+		left_array = array[0: int(b)]
+		right_array = array[int(b)+1:-1]		 
+	 	
+	 	left_fwhm_idx =min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min))  
+	 	right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
+		fwhm =  abs(array_vels[int(b)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+		multipeak=0
 	else:
-		minimum_idx = 10
-		minimum = 25
-	#FWHM
-	left_array = array[0: int(minimum_idx)]
-	right_array = array[int(minimum_idx): len(array)]
+		if len(c)>1:
+			mins = []
+			velmins = []
 
-	print 'XXXX'
-	print minimum
-	print right_array, left_array
-	fwhm_min = minimum/2. 
-	print fwhm_min
-	left_fwhm_idx = np.max(np.where(np.abs(left_array - fwhm_min) == 
-							 np.abs(left_array - fwhm_min).min())[0])   
-	right_fwhm_idx = np.min(np.where(np.abs(right_array - fwhm_min) == 
-							  np.abs(right_array - fwhm_min).min())[0])
+			for kk in xrange(0,len(c)):
+				mins.append(array[c[kk]])
+				velmins.append(array_vels[c[kk]])
+			minval=np.max(mins)
 
-	print left_fwhm_idx, right_fwhm_idx
-	
-	vel_left = array_vels[left_fwhm_idx]
-	vel_right = array_vels[int(minimum_idx+right_fwhm_idx)]
-	
-	fwhm = np.abs(vel_right - vel_left)
-	
-	#FW20
-	fw20_min = minimum/5. 
-	
-	left_fw20_idx = np.max(np.where(np.abs(left_array - fw20_min) == 
-							 np.abs(left_array - fw20_min).min())[0])  
-	right_fw20_idx = np.min(np.where(np.abs(right_array - fw20_min) == 
-							  np.abs(right_array - fw20_min).min())[0])
+			index_max = mins.index(minval)
+			
+			c = c[index_max]
+		vel_left = array_vels[0:int(c)]
+		vel_right = array_vels[int(c)+1:-1]
+		idx_one = min(range(len(array)), key=lambda i: abs(array[i]-(-1.)))
+		left_array = array[0:idx_one]
+		right_array = array[int(c)+1:-1]
 
-	print array
 
-	vel_left = array_vels[left_fw20_idx]
-	vel_right = array_vels[int(minimum_idx+right_fw20_idx)]
+		left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-array[c])) 
+		right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-array[c]))
+		fwhm =  abs(array_vels[int(c)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+		multipeak = 1
+	#print "The dataset appears to have multiple peaks, and thus the FWHM can't be determined."
+
+
+	#elif len(roots) < 2:
+	#	multipeak = 2
+	#	fwhm= 0
+	#else:
+#	fwhm =  abs(roots[1] - roots[0])
+
+
+
+	# vel_left = array_vels[left_fwhm_idx]
+	# vel_right = array_vels[int(minimum_idx+right_fwhm_idx)]
+
+	# fwhm = np.abs(vel_right - vel_left)
+	# print fwhm	
+	# #FW20
+	# fw20_min = minimum/5. 
+	# left_fw20_idx = np.max(np.where(np.abs(left_array - fw20_min) == 
+	# 						 np.abs(left_array - fw20_min).min())[0])  
+	# right_fw20_idx = np.min(np.where(np.abs(right_array - fw20_min) == 
+	# 						  np.abs(right_array - fw20_min).min())[0])
+	# print 'FW20'
+	# half_max = minimum / 5.
+	# d = sign(half_max - array(array[0:-1])) - sign(half_max - array(array[1:]))
+	# left_idx = find(d > 0)[0]
+	# right_idx = find(d < 0)[-1]
+	# print vels[right_idx] - vels[left_idx]
+
+	# vel_left = array_vels[left_fw20_idx]
+	# vel_right = array_vels[int(minimum_idx+right_fw20_idx)]
 	
-	fw20 = np.abs(vel_right - vel_left)    
-	
-	return fwhm, fw20
+	# fw20 = np.abs(vel_right - vel_left)    
+	# print fw20
+	#fwhm = 0
+	#multipeak=0
+	return fwhm,  multipeak
 
 
 #-------------------------------------------------#

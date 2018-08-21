@@ -63,7 +63,6 @@ def build_continuum(cfg_par):
 	head = f[0].header
 	dati = np.squeeze(dati)
 	dati = np.squeeze(dati)
-	print dati.shape
 	# define the resolution of the continuum image
 	scale_cont_asec = head['CDELT2']*3600
 	scale_cont_pc = conv.ang2lin(z_red, D_L, scale_cont_asec)*1e6
@@ -89,7 +88,6 @@ def build_continuum(cfg_par):
 	#-------------------------------------------------#
 
 	x_los, y_los, z_los = disk.main_box(cfg_par)
-	print x_los,y_los,z_los
 	# #on the continuum image
 	# x_los_num_right = x_los[-1]/scale_cont_pc
 	# x_los_num_left = x_los[0]/scale_cont_pc

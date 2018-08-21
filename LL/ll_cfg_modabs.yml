@@ -12,8 +12,8 @@ disk_1:
   rmax: 4000. # pc, maximum radius of the disk
   rmin: 0.    # pc, minimum radius of the disk (> 0 disk becomes a ring)
   h0: 100.    # pc, height of the disk
-  i: 49    # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
-  pa: 18  # degrees (0 = North, x = 0 in cartesian coordinates)
+  i: 83.51643428149005 # degrees (90 = edge on, 0 = face on N, 180 = face on S, rotation towards us)
+  pa:  43.01348112233441   # degrees (0 = North, x = 0 in cartesian coordinates)
   sign:  +1.  # red part of disk faces N for i=90 and pa = 0
   
 disk_2:
@@ -54,14 +54,14 @@ res_pars:
 
 plot_pars:
   __helpstr: plotting options
-  enable_figure: true # enable plot of absortion and disk
+  enable_figure: false # enable plot of absortion and disk
   format: 'png' #format for plotting
   enable_mcmc: False #enable for corner plots of mcmc simulation
   mcmc_run: 1 #RUN of MCMC to plot
 
 mcmc_pars:
   __helpstr: parameters for MCMC simulation. Does not consider disk_2, if enabled
-  enable: false
+  enable: true
   flat: True
   ndim_mcmc: 2  #this parameter should not be needed if only loop over I and PA
   nwalkers_mcmc: 4  #must be even, number of seeds with which investigate the parameter space
