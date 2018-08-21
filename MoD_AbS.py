@@ -225,6 +225,10 @@ if cfg_par[key].get('enable', False) == True :
     #-------------------------------------------------#
     #NORMALIZE the SPECTRUM to the OBSERVED one       #
     #-------------------------------------------------#
+
+    DISP = cfg_par['vel_pars'].get('disp', 200)
+    spec_int = stats.convoluzion(spec_int,DISP)
+    spec_int = np.array([vels, spec_int])
         
     print '...normalize spectrum...\n'
     
@@ -239,9 +243,7 @@ if cfg_par[key].get('enable', False) == True :
 
     spec_full = np.array([vels, spec_int_mod])
 
-    DISP = cfg_par['vel_pars'].get('disp', 200)
-    spec_full = stats.convoluzion(spec_full,DISP)
-    spec_full = np.array([vels, spec_full])
+
 
 
     print '********************\n'
