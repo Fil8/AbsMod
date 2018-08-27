@@ -90,7 +90,7 @@ def chi_res(s_mod, s_obs,cfg_par):
 # -------------------------------------------------#
 # FWHM & FW20                                      #
 # -------------------------------------------------#
-def widths(cfg_par,spec_model):
+def widths(cfg_par,spec_model,inc,pos_ang):
 	#find peak of the line
 
 	multipeak = 0
@@ -128,37 +128,47 @@ def widths(cfg_par,spec_model):
 	a = np.diff(np.sign(np.diff(array))).nonzero()[0] + 1 # local min+max
 	b = (np.diff(np.sign(np.diff(array))) > 0).nonzero()[0] + 1 # local min
 	c = (np.diff(np.sign(np.diff(array))) < 0).nonzero()[0] + 1 # local max
-	#print a
-	#print c
-
-	#if len(a) == 0:
-	#	multipeak = 2
-	#	fwhm=0.0
-	#	fwhm_2=0.0
-	if len(a) == 1:
-		#print 'small line'
-		fwhm_min = array[a]/2.
-		left_array = array[0: int(a)]
-		right_array = array[int(a)+1:-1]		 
-	 	left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min)) 
-	 	right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
-
-		fwhm =  abs(array_vels[int(a)+right_fwhm_idx] - array_vels[left_fwhm_idx])
-		multipeak=0
-		fwhm_2=fwhm
+	#print cfg_par['disk_1']['i'], cfg_par['disk_1']['pa']
 	
 
+	if len(a) == 1:
+		
+		# Effective code
+		HM = -1. / 2.
+		nearest_above = (np.abs(array[a:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:a] - HM)).argmin()
+
+		fwhm = (np.mean(array_vels[nearest_above + a]) - np.mean(array_vels[nearest_below]))
+	
+		# Effective code
+		HM = -1. / 5.
+		nearest_above = (np.abs(array[a:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:a] - HM)).argmin()
+
+		fw20 = (np.mean(array_vels[nearest_above + a]) - np.mean(array_vels[nearest_below]))
+
+		multipeak = 0
+
 	elif len(a) ==2:
-		#print 'line'
-		fwhm_min = array[b]/2.
-		left_array = array[0: int(b)]
-		right_array = array[int(b)+1:-1]		 
-	 	
-	 	left_fwhm_idx =min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min))  
-	 	right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
-		fwhm =  abs(array_vels[int(b)+right_fwhm_idx] - array_vels[left_fwhm_idx])
-		fwhm_2=fwhm
-		multipeak=0
+
+		# Effective code
+		HM = -1. / 2
+		nearest_above = (np.abs(array[b:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:b] - HM)).argmin()
+
+		fwhm = (np.mean(array_vels[nearest_above + b]) - np.mean(array_vels[nearest_below]))
+	
+		# Effective code
+		HM = -1. / 5.
+		nearest_above = (np.abs(array[b:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:b] - HM)).argmin()
+
+		fw20 = (np.mean(array_vels[nearest_above + b]) - np.mean(array_vels[nearest_below]))
+
+
+		multipeak = 0
+
+
 	elif len(a)>2:
 		#print 'c-line'
 		if len(c)>1:
@@ -173,74 +183,41 @@ def widths(cfg_par,spec_model):
 			index_max = mins.index(minval)
 			
 			c = c[index_max]
-	
-		#elif len(c)
 
-		vel_left = array_vels[0:int(c)]
-		vel_right = array_vels[int(c)+1:-1]
-		idx_one = min(range(len(array)), key=lambda i: abs(array[i]-(-1.)))
-		left_array = array[0:idx_one]
-		right_array = array[int(c)+1:-1]
+		# Effective code
+		HM = -1. / 2
+		nearest_above = (np.abs(array[a[-1]:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:a[0]] - HM)).argmin()
 
+		fwhm = (np.mean(array_vels[nearest_above + a[-1]]) - np.mean(array_vels[nearest_below]))
 
-		left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-array[c])) 
-		right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-array[c]))
-		fwhm =  abs(array_vels[int(c)+right_fwhm_idx] - array_vels[left_fwhm_idx])
+		# Effective code
+		HM = -1. / 5.
+		nearest_above = (np.abs(array[a[-1]:-1] - HM)).argmin()
+		nearest_below = (np.abs(array[:a[0]] - HM)).argmin()
 
+		fw20 = (np.mean(array_vels[nearest_above + a[-1]]) - np.mean(array_vels[nearest_below]))
 
-		left_array = array[0:a[0]]
-		right_array = array[a[-1]:-1]
-		#print a
-		#print array_vels[a[0]], array_vels[a[-1]]
-		#print right_array
-		fwhm_min = -1./2.
-		left_fwhm_idx = min(range(len(left_array)), key=lambda i: abs(left_array[i]-fwhm_min)) 
-		right_fwhm_idx = min(range(len(right_array)), key=lambda i: abs(right_array[i]-fwhm_min))
-		
-		fwhm_2 =  abs(array_vels[right_fwhm_idx] - array_vels[left_fwhm_idx])		
-		#print fwhm_2
 		multipeak = 1
-	else:
-		#print cfg_par['disk_1']	
-		multipeak=0
-		fwhm=0
-	#print "The dataset appears to have multiple peaks, and thus the FWHM can't be determined."
 
 
-	#elif len(roots) < 2:
-	#	multipeak = 2
-	#	fwhm= 0
-	#else:
-#	fwhm =  abs(roots[1] - roots[0])
+	out_table_runs = 'table_out_fwhm.csv'
 
+	#with open(out_table_runs, 'r') as f:
+	#    for line in f:
+	#        RUN += 1
 
+	# print RUN
 
-	# vel_left = array_vels[left_fwhm_idx]
-	# vel_right = array_vels[int(minimum_idx+right_fwhm_idx)]
+	table_out = open(out_table_runs, "ab+")
+	line_1 =  str(inc) + ',' + str(pos_ang) + ''','''
+	line_7 = str(fwhm) + ''','''+str(fw20) + ''',''' + str(multipeak) +  '''\n'''
 
-	# fwhm = np.abs(vel_right - vel_left)
-	# print fwhm	
-	# #FW20
-	# fw20_min = minimum/5. 
-	# left_fw20_idx = np.max(np.where(np.abs(left_array - fw20_min) == 
-	# 						 np.abs(left_array - fw20_min).min())[0])  
-	# right_fw20_idx = np.min(np.where(np.abs(right_array - fw20_min) == 
-	# 						  np.abs(right_array - fw20_min).min())[0])
-	# print 'FW20'
-	# half_max = minimum / 5.
-	# d = sign(half_max - array(array[0:-1])) - sign(half_max - array(array[1:]))
-	# left_idx = find(d > 0)[0]
-	# right_idx = find(d < 0)[-1]
-	# print vels[right_idx] - vels[left_idx]
+	line = line_1 + line_7
+	table_out.write(line)
+	table_out.close()
 
-	# vel_left = array_vels[left_fw20_idx]
-	# vel_right = array_vels[int(minimum_idx+right_fw20_idx)]
-	
-	# fw20 = np.abs(vel_right - vel_left)    
-	# print fw20
-	#fwhm = 0
-	#multipeak=0
-	return fwhm,  multipeak
+	return fwhm,  multipeak, fw20
 
 
 #-------------------------------------------------#
