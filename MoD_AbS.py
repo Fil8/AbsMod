@@ -228,6 +228,9 @@ if cfg_par[key].get('enable', False) == True :
 
     DISP = cfg_par['vel_pars'].get('disp', 200)
     spec_int = stats.convoluzion(spec_int,DISP)
+ 
+    print '...convolve spectrum...\n'
+
     spec_int = np.array([vels, spec_int])
         
     print '...normalize spectrum...\n'
@@ -238,10 +241,7 @@ if cfg_par[key].get('enable', False) == True :
     #else:
     #    spec_int_mod = spec_int[1,:].copy()
  
-
-
     spec_full = np.array([vels, spec_int_mod])
-
 
 
 
@@ -255,11 +255,14 @@ if cfg_par[key].get('enable', False) == True :
 
     residuals, obs_res, mod_res, CHI_SQ = stats.chi_res(spec_full, spec_obs, cfg_par)
 
-    FWHM, multipeak = stats.widths(spec_full)
+    # open output table
+    inc = cfg_par['disk_1']['i']
+    pos_ang = cfg_par['disk_1']['pa'] 
+    FWHM, multipeak, FW20 = stats.widths(cfg_par,spec_full,inc,pos_ang)
 
-    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2)}
+    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2),'FW20': np.round(FW20,2)}
     cfg_par['line_pars'] = line_pars
-    #print cfg_par['line_pars']
+    print line_pars
     #-------------------------------------------------#
     #Write new line in output table                   #
     #-------------------------------------------------#

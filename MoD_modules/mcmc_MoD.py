@@ -99,7 +99,7 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     # CONVOLVE the SPECTRUM                            #
     # -------------------------------------------------#
 
-    print '...convolve spectrum...\n'
+    #print '...convolve spectrum...\n'
 
     DISP = cfg_par['vel_pars'].get('disp', 200)
 
@@ -117,12 +117,12 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
         spec_int_mod = stats.normalize(spec_int,spec_obs_ln)
     else:
         spec_int_mod = spec_int[1,:].copy()
-        
     # -------------------------------------------------#
     # Determine residuals & chi2 & widths of the line  #
     # -------------------------------------------------#
 
     spec_full = np.array([vels, spec_int_mod])
+
     res, mod_res, obs_res = chi_square(spec_full, spec_obs_ln, cfg_par)
 
     noise = np.std(obs_res[1, :])
@@ -131,31 +131,16 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     if cfg_par['mcmc_pars']['flat'] == False:
         loglike = -0.5 * np.sum((np.power(res[1, :], 2) * inv_noise - np.log(inv_noise)))
     else:
-        loglike = 0.0
+        loglike = 1.0
     
-    FWHM, multipeak = stats.widths(cfg_par,spec_full)
-    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2)}
+    FWHM, multipeak,FW20 = stats.widths(cfg_par,spec_full,inc,pos_ang)
+    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2),'FW20': np.round(FW20,2)}
     cfg_par['line_pars'] = line_pars
     print cfg_par['line_pars']
 
     # -------------------------------------------------#
     #write table
     RUN = 0
-    out_table_runs = 'table_out_fwhm.csv'
-
-    #with open(out_table_runs, 'r') as f:
-    #    for line in f:
-    #        RUN += 1
-
-    # print RUN
-
-    table_out = open(out_table_runs, "ab+")
-    line_1 =  str(inc) + ',' + str(pos_ang) + ''','''
-    line_7 = str(FWHM) + ''',''' + str(multipeak) +  '''\n'''
-
-    line = line_1 + line_7
-    table_out.write(line)
-    table_out.close()
 
     return loglike
 
