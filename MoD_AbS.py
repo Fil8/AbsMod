@@ -262,7 +262,6 @@ if cfg_par[key].get('enable', False) == True :
 
     line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2),'FW20': np.round(FW20,2)}
     cfg_par['line_pars'] = line_pars
-    print line_pars
     #-------------------------------------------------#
     #Write new line in output table                   #
     #-------------------------------------------------#

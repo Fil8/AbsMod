@@ -123,6 +123,11 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
 
     spec_full = np.array([vels, spec_int_mod])
 
+    FWHM, multipeak,FW20 = stats.widths(cfg_par,spec_full,inc,pos_ang)
+    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2),'FW20': np.round(FW20,2)}
+    cfg_par['line_pars'] = line_pars
+    print cfg_par['line_pars']
+
     res, mod_res, obs_res = chi_square(spec_full, spec_obs_ln, cfg_par)
 
     noise = np.std(obs_res[1, :])
@@ -133,10 +138,7 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     else:
         loglike = 1.0
     
-    FWHM, multipeak,FW20 = stats.widths(cfg_par,spec_full,inc,pos_ang)
-    line_pars = {'FWHM':np.round(FWHM,2), 'multipeak': np.round(multipeak,2),'FW20': np.round(FW20,2)}
-    cfg_par['line_pars'] = line_pars
-    print cfg_par['line_pars']
+
 
     # -------------------------------------------------#
     #write table

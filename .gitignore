@@ -13,12 +13,20 @@
 simulate_continuum/
 special_cases/
 old_software/
+table_out_fwhm.csv
+<<<<<<< HEAD
 MoD_AbS_script.py
 MoD_AbS_mcmc_mod.py
 NGC1167/
 LC/
 LCL/
-
+LL/
+MoD_AbS.wiki/
+MoD_modules/*.pyc
+=======
+Mod_AbS_git/
+NGC1167/
+>>>>>>> b4d8e434df66179966459d6e060ca59fbbbf9187
 # Packages #
 ############
 # it's better to unpack these files and commit the raw source
