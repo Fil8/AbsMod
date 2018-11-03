@@ -4,7 +4,7 @@ __email__ = "filippo.maccagni@gmail.com"
 
 import sys, string, os, time
 import numpy as np
-import yaml, pyaml
+import yaml, pyaml, shutil
 #import json
 
 from astropy.io import fits, ascii
@@ -221,7 +221,6 @@ if cfg_par[key].get('enable', False) == True :
 
     #set final integrated spectrum
     spec_int[1, :] = spec_integral[:] 
-
     #-------------------------------------------------#
     #NORMALIZE the SPECTRUM to the OBSERVED one       #
     #-------------------------------------------------#
@@ -236,14 +235,10 @@ if cfg_par[key].get('enable', False) == True :
     print '...normalize spectrum...\n'
     
     #if cfg_par['general'].get('spectrum_type') == 'real':
-    print np.min(spec_obs[1])
     spec_int_mod = stats.normalize(spec_int,spec_obs)
     
-    print np.min(spec_int_mod)
-
     #else:
-    #    spec_int_mod = spec_int[1,:].copy()
- 
+    #    spec_int_mod = spec_int[1,:].copy() 
     spec_full = np.array([vels, spec_int_mod])
 
 
@@ -294,7 +289,9 @@ if cfg_par[key].get('enable', False) == True :
 
     print '\n...End Plotting...\n'
 
-
+print '\n...cleanup...\n'
+newfilecont= workdir+'copy_continuum.fits'
+os.remove(newfilecont)
 
 print '********************\n'   
 

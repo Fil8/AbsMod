@@ -31,7 +31,6 @@ vel_pars:
   vrot:  350. #km/s, rotational velocity where the rotation curve is flat
   r_vflat: 5000. #radius at which rotational velocity becomes flat, if kind is set to rising
   disp:  10. #km/s, HI velocity dispersion, is this needed?
-  vel_res:  21.  #km/s, velocity resolution to which convolve the model spectrum, is this used?
 
 abs_pars:
   __helpstr: parameters of continuum for absorbing part of HI disk

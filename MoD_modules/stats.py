@@ -127,9 +127,7 @@ def widths(cfg_par,spec_model,inc,pos_ang):
 	a = np.diff(np.sign(np.diff(array))).nonzero()[0] + 1 # local min+max
 	b = (np.diff(np.sign(np.diff(array))) > 0).nonzero()[0] + 1 # local min
 	c = (np.diff(np.sign(np.diff(array))) < 0).nonzero()[0] + 1 # local max
-	#print cfg_par['disk_1']['i'], cfg_par['disk_1']['pa']
 	
-	print a
 	if len(a) == 1:
 		
 		# Effective code
@@ -199,8 +197,9 @@ def widths(cfg_par,spec_model,inc,pos_ang):
 
 		multipeak = 1
 	else:
-		print 'xxxxxxxxxxxx'
-		print a, inc, pos_ang
+		fwhm = 0.0
+		fw20 = 0.0
+		multipeak = 0
 
 
 	out_table_runs = 'table_out_fwhm.csv'
@@ -216,7 +215,6 @@ def widths(cfg_par,spec_model,inc,pos_ang):
 	line_7 = str(fwhm) + ''','''+str(fw20) + ''',''' + str(multipeak) +  '''\n'''
 
 	line = line_1 + line_7
-	print line
 	table_out.write(line)
 	table_out.close()
 
