@@ -2,7 +2,8 @@ import numpy as np
 from astropy.io import fits
 from astropy import wcs
 from scipy.ndimage.interpolation import zoom
-
+import montage_wrapper as montage
+from reproject import reproject_exact
 import conversions as conv
 import disk as disk
 #-------------------------------------------------#
@@ -64,24 +65,39 @@ def build_continuum(cfg_par):
 	dati = np.squeeze(dati)
 	dati = np.squeeze(dati)
 	# define the resolution of the continuum image
+	RES = cfg_par['res_pars'].get('pix_res', 100)
+
 	scale_cont_asec = head['CDELT2']*3600
 	scale_cont_pc = conv.ang2lin(z_red, D_L, scale_cont_asec)*1e6
 
+	scale_cube_deg = conv.lin2ang(z_red,D_L, RES*1e-6)/3600.
 	#load the continuum image
 	head = fits.getheader(workdir+filecont)
 	head = clean_header(head)
+
+  	if 'NAXIS3' in head:
+  		del head['NAXIS3']
+  	if 'NAXIS4' in head:
+  		del head['NAXIS4']	
+
+  	newfilecont = workdir+'reproj_cont'+str(RES)+'.fits'
+	fits.writeto(newfilecont,dati,head,overwrite=True)
+
 	#print head
 	w = wcs.WCS(head)    
 	#convert coordinates in pixels
 	cen_x,cen_y=w.wcs_world2pix(ra,dec,0)
 	#cen_x, cen_y = w.wcs_world2pix(ra, dec, 1)
+
 	cen_x = np.round(cen_x,0)
 	cen_y = np.round(cen_y,0)
 
+
 	print '\tContinuum centre [pixel]:\t'+'x: '+str(cen_x)+'\ty: '+str(cen_y) 
 	print '\tContinuum pixel size [pc]:\t'+str(scale_cont_pc)+'\n'
-		  
-	#deterimne the edges of the output cube 
+	print '\t Size of continuum image:\t'+str(head['NAXIS1'])+'\n'  
+
+ 	#deterimne the edges of the output cube 
 
 	#-------------------------------------------------#
 	#CUBE of HI disk                                  #
@@ -89,135 +105,75 @@ def build_continuum(cfg_par):
 
 	x_los, y_los, z_los = disk.main_box(cfg_par)
 	# #on the continuum image
-	# x_los_num_right = x_los[-1]/scale_cont_pc
-	# x_los_num_left = x_los[0]/scale_cont_pc
-	# y_los_num_up = y_los[-1]/scale_cont_pc
-	# y_los_num_low = y_los[0]/scale_cont_pc
+	x_los_num_right = x_los[-1]/scale_cont_pc
+	x_los_num_left = x_los[0]/scale_cont_pc
+	y_los_num_up = y_los[-1]/scale_cont_pc
+	y_los_num_low = y_los[0]/scale_cont_pc
 
-	# y_up = cen_y+y_los_num_up
-	# x_right = cen_x+x_los_num_right
-	# y_low = cen_y+y_los_num_low
-	# x_left = cen_x+x_los_num_left
-	# #approximate
-	# x_left_int = np.modf(x_left)
-	# x_right_int = np.modf(x_right)
-	# y_low_int = np.modf(y_low)
-	# y_up_int = np.modf(y_up)
-	# #select the continuum subset
-	# yshape = int(y_up_int[1] - y_low_int[1])
-	# xshape = int(x_right_int[1] - x_left_int[1])
 
-   #deterimne the edges of the output cube 
-	#on the continuum image
-	x_los_num_right=x_los[-1]/scale_cont_pc
-	x_los_num_left=x_los[0]/scale_cont_pc
-	y_los_num_up=y_los[-1]/scale_cont_pc
-	y_los_num_low=y_los[0]/scale_cont_pc
-	
-	y_up=cen_y+y_los_num_up
-	x_right=cen_x+x_los_num_right
-	y_low=cen_y+y_los_num_low
-	x_left=cen_x+x_los_num_left
-	
+
+
+	y_up = cen_y+y_los_num_up
+	x_right = cen_x+x_los_num_right
+	y_low = cen_y+y_los_num_low
+	x_left = cen_x+x_los_num_left
 	#approximate
-	x_left_int=np.modf(x_left)
-	x_right_int=np.modf(x_right)
-	y_low_int=np.modf(y_low)
-	y_up_int=np.modf(y_up)
-	
+	x_left_int = np.modf(x_left)
+	x_right_int = np.modf(x_right)
+	y_low_int = np.modf(y_low)
+	y_up_int = np.modf(y_up)
+
 	#select the continuum subset
-	sub_dati=dati[int(y_low_int[1]):int(y_up_int[1]),int(x_left_int[1]):int(x_right_int[1])]
+	yshape = int(y_up_int[1] - y_low_int[1])
+	xshape = int(x_right_int[1] - x_left_int[1])
 
-	if sub_dati.shape[0] != sub_dati.shape[1]:
-		sub_dati=dati[int(y_low_int[1]):int(y_up_int[1])-1,int(x_left_int[1]):int(x_right_int[1])]
-		
+
+	#if not all(i>0 for i in [x_left_int[1],x_right_int[1],y_low_int[1],y_up_int[1]]):
+
+	print '\t reproject continuum image\n'
+
+	slave = fits.open(workdir+filecont)[0]
 	
-	#determine how much I have to interpolate     
-	zoom_factor= float(len(x_los))/float(len(sub_dati[0]))
-	
-	#interpolate to the desired resolution of the cycle 1 cube
-	zoom_dati=zoom(sub_dati,zoom_factor,order=3)
+	#make header		
+
+  	if 'NAXIS3' in head:
+  		del head['NAXIS3']
+  	if 'NAXIS4' in head:
+  		del head['NAXIS4']
+
+  	new_xshape = int(2*x_los[-1]/scale_cont_pc)
+
+  	head['NAXIS1'] = new_xshape
+  	head['NAXIS2'] = new_xshape
+
+  	head['CRPIX1'] = int(new_xshape/2.)
+  	head['CRPIX2'] = int(new_xshape/2.)+1
+
+  	head['CRVAL1'] = ra
+  	head['CRVAL2'] = dec
+
+  	#head['CDELT1'] = -scale_cube_deg
+  	#head['CDELT2'] = scale_cube_deg 
 
 
-	#sub_dati = np.zeros([yshape, xshape])
+	newdati, footprint = reproject_exact(slave,head)
+	newdati = np.nan_to_num(newdati)
 
-	# #Top Left corner
-	# if cen_y > head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
-	# 	print 'topleft'
-	# 	diff_x = int(cen_x*2)
-	# 	diff_y = int(head['NAXIS2']-cen_y)
+	fits.writeto(workdir+'reproj_cont'+str(RES)+'.fits', newdati, head, clobber=True)
 
-	# 	subcont = dati[diff_y:head['NAXIS2'],0:diff_x]
-
-	# #Top Right corner
-	# if cen_y > head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
-	# 	print 'topright'
-
-	# 	diff_x = int(head['NAXIS1']-cen_x)
-	# 	diff_y = int(head['NAXIS2']-cen_y)
-
-	# 	subcont = dati[diff_y:head['NAXIS2'],diff_x:head['NAXIS2']]
-
-	# #Bottom Left corner
-	# if cen_y < head['NAXIS2']/2 and cen_x < head['NAXIS1']/2:
-	# 	print 'bottomleft'
+	zoom_factor= float(len(x_los))/float(new_xshape)
 		
+	##interpolate to the desired resolution of the cycle 1 cube
+	newdati=zoom(newdati,zoom_factor,order=3)
 
-	# 	diff_x = int(cen_x*2)
-	# 	diff_y = int(cen_y*2)
-
-	# 	subcont = dati[0:diff_y,0:diff_x]
-
-
-	# #Bottom right corner
-	# if cen_y < head['NAXIS2']/2 and cen_x > head['NAXIS1']/2:
-	# 	print 'bottomright'
-		
-	# 	diff_x = int(head['NAXIS1']-cen_x)
-	# 	diff_y = int(cen_y*2)
-
-	# 	subcont = dati[0:diff_y,diff_x:head['NAXIS2']]
-
-	# if cen_y == head['NAXIS2']/2 and cen_x == head['NAXIS1']/2:
-
-	# 	subcont = dati[:,:]
-
-	# rows = head['NAXIS2']- subcont.shape[0]
-	# zerows = np.zeros([rows/2, subcont.shape[1]])
-	# subcont = np.vstack([subcont,zerows])
-	# subcont = subcont[::-1,:]
-	# subcont = np.vstack([subcont,zerows])
-	# subcont = subcont[::-1,:]
-
-	# columns = head['NAXIS1']- subcont.shape[1]
-	# zercolumn = np.zeros([head['NAXIS2'],columns/2])
-	# #zercolumn = np.zeros([head['NAXIS2']-1,columns/2])
-
-	# subcont = np.hstack([subcont,zercolumn])
-	# subcont = subcont[:,::-1]
-	# subcont = np.hstack([subcont,zercolumn])
-	# subcont = subcont[:,::-1]
-	# subcont = dati[:,:]
-
-	# #determine how much I have to interpolate   
-	# RES = cfg_par['res_pars'].get('pix_res', 100)
-	# factor = RES/scale_cont_pc
-	# #zoom_factor = float(len(x_los))/float(len(subcont[0]))
-	# zoom_factor = factor
-	# print zoom_factor
-	# #interpolate to the desired resolution of the cycle 1 cube
-	# zoom_dati = zoom(subcont, zoom_factor, order=3)
-	# print zoom_dati.shape
 	#-------------------------------------------------#
 	# Cube with the continuum image at z=0            # 
 	# the axis are sorted in the array: [y,z,x]       #
 	#-------------------------------------------------#
 
-	continuum_image = zoom_dati.copy()
-
+	continuum_image =  newdati.copy()
 	continuum_cube_z = np.dstack([continuum_image]*(len(z_los)))
 	continuum_cube_z = np.swapaxes(continuum_cube_z, 1, 2)
-
 	#mask the noise of the continuum in the cube
 	index_mask = continuum_cube_z < CONT_LIM
 	continuum_cube_z[index_mask] = 0.0

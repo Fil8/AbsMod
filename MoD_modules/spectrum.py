@@ -19,11 +19,12 @@ def input_spectrum(cfg_par):
 		#convert in frequency given the systemic velocity
 		spec_obs[:, 0] = (HI_hz/spec_obs[:, 0]-1)*C
 		spec_obs[:, 0] = spec_obs[:, 0]-VSYS
-
 	else:
 		spec_obs=np.zeros([500,2])
 		spec_obs[:, 0] = np.linspace(-350,350,500)
 		spec_obs[:, 1] = 0.0
+
+	print spec_obs[:,1]
 
 	vels = np.hstack([1.5*spec_obs[0, 0]-0.5*spec_obs[1, 0],
 	                  0.5*(spec_obs[0:-1, 0]+spec_obs[1:, 0]),

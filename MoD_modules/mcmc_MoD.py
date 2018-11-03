@@ -113,7 +113,6 @@ def lnlike(theta, continuum_cube_z_ln, spec_obs_ln, vels, spec_int, cfg_par):
     # NORMALIZE the SPECTRUM to the OBSERVED one       #
     # -------------------------------------------------#
     if cfg_par['mcmc_pars']['flat'] == False:
-    
         spec_int_mod = stats.normalize(spec_int,spec_obs_ln)
     else:
         spec_int_mod = spec_int[1,:].copy()

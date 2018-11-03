@@ -12,7 +12,6 @@ def normalize(spec_int,spec_obs):
 	
 	#normalize modelled spectrum to observed one
 	peak_obs = np.min(spec_obs[:, 1])
-	peak_obs = -1.
 	peak_mod = np.min(spec_int[1, :])
 	if peak_mod < 0.:
 		spec_int_norm = np.divide(spec_int[1, :], peak_mod)

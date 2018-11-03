@@ -236,8 +236,11 @@ if cfg_par[key].get('enable', False) == True :
     print '...normalize spectrum...\n'
     
     #if cfg_par['general'].get('spectrum_type') == 'real':
-
+    print np.min(spec_obs[1])
     spec_int_mod = stats.normalize(spec_int,spec_obs)
+    
+    print np.min(spec_int_mod)
+
     #else:
     #    spec_int_mod = spec_int[1,:].copy()
  
